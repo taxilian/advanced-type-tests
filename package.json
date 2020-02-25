@@ -1,0 +1,17 @@
+{
+  "name": "advanced-type-tests",
+  "version": "1.0.0",
+  "description": "Helpers to make it possible to write unit tests for advanced typescript types",
+  "main": "src/index.ts",
+  "scripts": {
+    "prepublish": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.8.2"
+  }
+}

@@ -9,7 +9,8 @@
   },
   "types": "dist/index.d.ts",
   "files": ["dist"],
-  "author": "",
+  "repository": {"url": "https://github.com/taxilian/advanced-type-tests.git"},
+  "author": "Richard Bateman <richard@hamstudy.org>",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^3.8.2"

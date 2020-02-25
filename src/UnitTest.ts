@@ -21,6 +21,12 @@ export type NotAny<T> = Invert<IsAny<T>>;
 export type IsTrue<T> = T extends OnlyAny<T> ? No : UnionToIntersection<T> extends Yes ? Yes : No;
 export type TypeExtends<X, Y> = X extends Y ? Yes : No;
 export type TypeNotExtends<X, Y> = Invert<TypeExtends<X, Y>>;
+export type KeyIsIn<X extends string, Y> = X extends keyof Y ? Y[X] extends any ? Yes : No : No;
+
+type t_KeyIsIn1 = KeyIsIn<'indexOf', string>;
+type t_KeyIsIn2 = Invert<KeyIsIn<'fooBar', string>>;
+
+type TESTAGG_KeyIsInTests = t_KeyIsIn1 & t_KeyIsIn2;
 
 export type And<A, B> = A extends Yes ? B extends Yes ? Yes : No : No;
 export type And3<A, B, C> = And<A, B> extends Yes ? C extends Yes ? Yes : No : No;
@@ -31,6 +37,21 @@ export type Or3<A, B, C> = Or<A, B> extends Yes ? Yes : C extends Yes ? Yes : No
 export type Or4<A, B, C, D> = Or3<A, B, C> extends Yes ? Yes : D extends Yes ? Yes : No;
 
 export type IfThen<Cond, Then, Else = never> = IsTrue<Cond> extends Yes ? Then : Else;
+
+export type FilterKeys<T> = { [P in keyof T]: T[P] extends T ? never : P }[keyof T];
+export type FilterType<T> = { [P in FilterKeys<T>]: T[P] };
+
+interface TypeToFilter {
+    asdf: string;
+    fdsa: number;
+    huh: any;
+    goaway: never;
+}
+type FilteredTypeTest = FilterType<TypeToFilter>;
+type t_TypeFiltered = Invert<TypeExtends<keyof[FilteredTypeTest], 'goaway'>>;
+type t_TypeFiltered2 = And3<KeyIsIn<'asdf', FilteredTypeTest>, KeyIsIn<'fdsa', FilteredTypeTest>, KeyIsIn<'huh', FilteredTypeTest>>;
+
+type TESTAGG_FilterTests = t_TypeFiltered & t_TypeFiltered2;
 
 type t_TestIfThen = TypeEquals<IfThen<Yes, string, No>, string>;
 type t_TestIfThen2 = TypeEquals<IfThen<No, No, string>, string>;
@@ -159,26 +180,57 @@ type TESTAGG_TypeEqualsTests = Yes
     & t_TypeEqualsSupportsFalse
     & t_TypeEqualsSupportsStringLit;
 
-export type FieldsCheckEqual<X extends object, Y extends object, Keys extends keyof X = keyof X> = {
-    [Key in Keys]: Key extends keyof Y ? (Yes & (
+
+export type FieldsCheckEqual<X, Y, Keys extends keyof X | keyof Y = keyof X | keyof Y> = {
+    [Key in Keys]: Key extends FilterKeys<X> ? Key extends FilterKeys<Y> ? (Yes & (
         X[Key] extends any[] ? 
             ArrayTypeEquals<X[Key], Y[Key]> : TypeEquals<X[Key], Y[Key]>
-        )) : No;
+        )) : No : No;
 };
+export type FieldsConfirmCheck<T> = Invert<T[keyof T] extends Yes ? No : Yes>;
 // When FieldsCheckEqual fails this can be used to help understand what is going on
-export type FieldsCheckEqual_Test<X extends object, Y extends object, Keys extends keyof X = keyof X> = {
-    [Key in Keys]: [X[Key], Key extends keyof Y ? Y[Key] : never, Key extends keyof Y ? (Yes & (
+export type FieldsCheckEqual_Test<X, Y, Keys extends keyof X | keyof Y = keyof X | keyof X> = {
+    [Key in Keys]: [Key extends FilterKeys<X> ? Key extends FilterKeys<Y> ? (Yes & (
         X[Key] extends any[] ?
         ArrayTypeEquals<X[Key], Y[Key]> : TypeEquals<X[Key], Y[Key]>
-        )) : No];
+        )) : No : No];
 };
+
+interface testFieldCheck {
+    foo: any;
+    bar: string;
+    baz: number;
+}
+interface testFieldCheckExtra extends testFieldCheck {
+    meh: boolean;
+}
+interface testFieldCheckWithNever extends testFieldCheck {
+    something: never;
+}
+type TestCompareGood = FieldsCheckEqual<testFieldCheck, testFieldCheck>;
+type TestCompareBad1 = FieldsCheckEqual<testFieldCheck, testFieldCheckExtra>;
+type TestCompareBad2 = FieldsCheckEqual<testFieldCheckExtra, testFieldCheck>;
+type TestCompareBad3 = FieldsCheckEqual<testFieldCheckWithNever, testFieldCheckWithNever>;
+
+type t_TestFieldCompareGood = FieldsConfirmCheck<TestCompareGood>;
+type t_TestFieldCompareBad1 = Invert<FieldsConfirmCheck<TestCompareBad1>>;
+type t_TestFieldCompareBad2 = Invert<FieldsConfirmCheck<TestCompareBad2>>;
+type t_TestFieldCompareBad3 = Invert<FieldsConfirmCheck<TestCompareBad3>>;
+
+type TESTAGG_FieldCheck = NotAny<Yes
+    & t_TestFieldCompareGood
+    & t_TestFieldCompareBad1 & t_TestFieldCompareBad2 & t_TestFieldCompareBad3
+>;
 
 // If this type is not 'pass' (exported as Yes) then this file is not working correctly
 export type TypeChecks = NotAny<Yes
     & TESTAGG_TruthTests
+    & TESTAGG_FilterTests
+    & TESTAGG_KeyIsInTests
     & TESTAGG_AndTests
     & TESTAGG_OrTests
     & TESTAGG_BothAnyTests
     & TESTAGG_BothBoolTests
     & TESTAGG_TypeEqualsTests
+    & TESTAGG_FieldCheck
 >;

@@ -1,6 +1,6 @@
 {
   "name": "advanced-type-tests",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Helpers to make it possible to write unit tests for advanced typescript types",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

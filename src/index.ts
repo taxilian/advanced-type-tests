@@ -1,9 +1,17 @@
 
 import * as UnitTests from './UnitTest';
+import {Yes, Result, TypeChecks, IsTrue} from './UnitTest';
 
-const v: UnitTests.TypeChecks = void 0;
-onlyCompileIfPassed(v);
+type FinalCheck = IsTrue<TypeChecks>;
 
-function onlyCompileIfPassed(v: UnitTests.Yes) {}
+const v: FinalCheck = void 0;
+assert<Yes>(v);
 
-export {UnitTests};
+/**
+ * Used to throw a typescript compile error if test results are not what
+ * were expected
+ * @param v 
+ */
+function assert<T extends Result = Yes>(v: T) { !!v; }
+
+export {UnitTests, assert};

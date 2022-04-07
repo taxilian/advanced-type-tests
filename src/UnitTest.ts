@@ -1,13 +1,9 @@
 
 // Used to detect if the type is any
-export interface SuperUnlikelyType {
-    ["/*1235324"]: {'/?..': '999999937'};
-}
-
 export type UnionToIntersection<U> =
     (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
 
-export type OnlyAny<T> = [T] extends [SuperUnlikelyType] ? T : never;
+export type OnlyAny<T> = [0] extends [0 & T] ? T : never;
 
 export type Yes = 'pass';
 export type No = 'fail';
